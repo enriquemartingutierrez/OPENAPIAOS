@@ -29,7 +29,7 @@ Esta API se compone de un único recurso que se llama **🔔Notificación**. Las
       
 Las operaciones que se pueden realizar en nuestra API son: 
 
-- _**GET** /notificacion_: para obtener TODAS las notificaciones 
+- _**GET** /notificacion_: para obtener TODAS las notificaciones o pasa el id de un cliente (_clienteId_) para obtener las notificaciones de ese cliente
 - _**POST** /notificacion_: para crear una nueva notificación 
 - _**OPTIONS** /notificacion_: que muestra las operaciones que se pueden realizar sobre este path 
 - _**GET** /notificacion/{notificacionId}_: que devuelve la notificación identificada por el id dado 
