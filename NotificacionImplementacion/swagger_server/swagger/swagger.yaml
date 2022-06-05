@@ -1,0 +1,700 @@
+openapi: 3.0.3
+info:
+  title: "API Taller: Notificaciones"
+  description: Subsistema del envío de notificaciones de eventos relacionados con
+    el taller
+  contact:
+    name: Enrique Martín y Eduardo Mena
+    email: enrique.martin.gutierrez@alumnos.upm.es
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:80/api/v1
+tags:
+- name: Notificacion
+  description: Notificación destinada a un usuario sobre el estado de su vehículo
+    en el taller.
+paths:
+  /notificacion:
+    get:
+      tags:
+      - Notificacion
+      summary: Obtiene todas las notificaciones de un cliente
+      description: "Si se introduce como parametro el id del cliente se obtienen las\
+        \ notificaciones de ese cliente, en el caso en el que no se especifique el\
+        \ parámetro se obtendrán todas las notificaciones."
+      operationId: notificacion_all_get
+      parameters:
+      - name: clienteId
+        in: query
+        description: ID de un cliente
+        required: false
+        style: form
+        explode: true
+        schema:
+          pattern: ^\d+$
+          type: integer
+      - name: order
+        in: query
+        description: "Elige atributo para ordenar: `id` o `tipo`"
+        required: false
+        allowEmptyValue: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - id
+          - tipo
+      - name: ordering
+        in: query
+        description: '`ASC` o `DESC`'
+        required: false
+        allowEmptyValue: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - ASC
+          - DESC
+      responses:
+        "200":
+          description: Array de notificaciones
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+              examples:
+                notificacionesExamples:
+                  $ref: '#/components/examples/notificaciones'
+        "404":
+          description: "`NOT FOUND`: recurso no disponible"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-404:
+                  $ref: '#/components/examples/response-http-404'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+    post:
+      tags:
+      - Notificacion
+      summary: Crea una nueva notificación
+      description: Crea una nueva notificación para un cliente del taller introduciendo
+        los datos siguiendo el esquema.
+      operationId: notificacion_post
+      requestBody:
+        $ref: '#/components/requestBodies/notificacionRB'
+      responses:
+        "201":
+          description: notificacion creada
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "406":
+          description: "`NOT ACCEPTABLE`: El id del cliente o del vehículo que se\
+            \ ha proporcionado no corresponde con ninguno existente"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-406:
+                  $ref: '#/components/examples/response-http-406'
+        "422":
+          description: "`UNPROCESSABLE ENTITY`: Falta alguno de los atributos requeridos\
+            \ o son erróneos(clienteId, vehiculo o tipo)..."
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-422:
+                  $ref: '#/components/examples/response-http-422'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+    options:
+      tags:
+      - Notificacion
+      summary: Devuelve un resumen de las peticiones HTTP permitidas.
+      description: Proporciona una cabecera de tipo `Allow` que indica los métodos
+        HTTP permitidos y separados por comas.
+      operationId: notificacion_all_options
+      responses:
+        "204":
+          description: cabecera `Allow` &lt;El cuerpo de la respuesta está vacío&gt;
+          headers:
+            Allow:
+              $ref: '#/components/headers/Allow'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+  /notificacion/{notificacionId}:
+    get:
+      tags:
+      - Notificacion
+      summary: Obtiene una notificación concreta.
+      description: Devuelve una notificación concreta identificada por su identificador
+        (notificacionId).
+      operationId: notificacion_get
+      parameters:
+      - name: notificacionId
+        in: path
+        description: ID de una notificacion
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\d+$
+          type: integer
+      responses:
+        "200":
+          description: Notificacion
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "404":
+          description: "`NOT FOUND`: recurso no disponible"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-404:
+                  $ref: '#/components/examples/response-http-404'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+    put:
+      tags:
+      - Notificacion
+      summary: Modifica la notificación.
+      description: Cambia la información de una notificación identificada por su identificador
+        (notificacionId)
+      operationId: notificacion_put
+      parameters:
+      - name: notificacionId
+        in: path
+        description: ID de una notificacion
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\d+$
+          type: integer
+      - name: If_Match
+        in: header
+        description: ETag del recurso que se desea modificar
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: "[0-9a-f]*"
+          type: string
+      requestBody:
+        $ref: '#/components/requestBodies/notificacionPutRB'
+      responses:
+        "200":
+          description: "`OK`: la notificación ha sido actualizada con éxito"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "404":
+          description: "`NOT FOUND`: recurso no disponible"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-404:
+                  $ref: '#/components/examples/response-http-404'
+        "406":
+          description: "`NOT ACCEPTABLE`: El id del cliente o del vehículo que se\
+            \ ha proporcionado no corresponde con ninguno existente"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-406:
+                  $ref: '#/components/examples/response-http-406'
+        "412":
+          description: "`PRECONDITION FAILED`: no se cumple alguna condición previa"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-412:
+                  $ref: '#/components/examples/response-http-412'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+    delete:
+      tags:
+      - Notificacion
+      summary: Elimina una notificacion.
+      description: Elimina la notificacion identificada por su identificador (notificacionId).
+      operationId: notificacion_delete
+      parameters:
+      - name: notificacionId
+        in: path
+        description: ID de una notificacion
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\d+$
+          type: integer
+      responses:
+        "204":
+          description: Notificacion eliminada &lt;Cuerpo de la respuesta vacío&gt;
+        "404":
+          description: "`NOT FOUND`: recurso no disponible"
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/HTTP_Problem'
+              examples:
+                response-http-404:
+                  $ref: '#/components/examples/response-http-404'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+    options:
+      tags:
+      - Notificacion
+      summary: Devuelve un resumen de las peticiones HTTP permitidas.
+      description: Proporciona una cabecera de tipo `Allow` que indica los métodos
+        HTTP permitidos y separados por comas.
+      operationId: notificacion_options
+      parameters:
+      - name: notificacionId
+        in: path
+        description: ID de una notificacion
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\d+$
+          type: integer
+      responses:
+        "204":
+          description: cabecera `Allow` &lt;El cuerpo de la respuesta está vacío&gt;
+          headers:
+            Allow:
+              $ref: '#/components/headers/Allow'
+      x-openapi-router-controller: swagger_server.controllers.notificacion_controller
+components:
+  schemas:
+    Notificacion:
+      required:
+      - clienteId
+      - tipo
+      - vehiculo
+      type: object
+      properties:
+        notificacionId:
+          type: integer
+          description: Id de la notificacion
+          format: int32
+          readOnly: true
+        clienteId:
+          type: integer
+          description: Id del cliente
+          format: int32
+          readOnly: true
+        vehiculo:
+          type: string
+          description: VIN del vehículo
+          readOnly: true
+        tipo:
+          $ref: '#/components/schemas/Tipo'
+        descripcion:
+          type: string
+          description: Descripción de la notificación
+      description: Notificacion creada
+      example:
+        notificacionId: 47
+        clienteId: 23
+        vehiculo: 1HGBH41JXMN109186
+        tipo: Llegada
+        descripcion: Tu vehículo acaba de ser recibido en el taller.
+        links:
+          notificacionesCliente:
+            href: /api/v1/notificacion?clienteId=23
+            rel: notificacionesClientes
+    Tipo:
+      type: string
+      description: Conjunto de todos los tipos de notificaciones posibles.
+      nullable: false
+      enum:
+      - Llegada
+      - Comienzo de Evaluación
+      - Comienzo de Reparación
+      - Imprevisto detectado
+      - Reparación finalizada
+      - Envío de factura
+      - Otro
+      - Salida
+    HTTP_Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: "A URI reference [RFC3986] that identifies the problem type"
+          format: uri
+        title:
+          type: string
+          description: short human-readable summary of the problem type
+        status:
+          type: number
+          description: HTTP status code
+        detail:
+          type: string
+          description: human-readable explanation specific to this occurrence of the
+            problem
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of
+            the problem.  It may or may not yield further information if dereferenced
+          format: uri
+      description: Problem Details for HTTP APIs
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7807
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URL del enlace
+          format: url
+          x-faker: internet.url
+        rel:
+          type: string
+          description: Relación del documento enlazado con el actual. Contiene una
+            lista de tipos de enlaces separados por espacio.
+          x-faker: lorem.words
+      description: Enlace de relación
+    inline_response_200:
+      type: object
+      properties:
+        notificaciones:
+          type: array
+          description: array de notificaciones
+          items:
+            $ref: '#/components/schemas/Notificacion'
+      example:
+        notificaciones:
+        - notificacionId: 47
+          clienteId: 23
+          vehiculo: 1HGBH41JXMN109186
+          tipo: Llegada
+          descripcion: Tu vehículo acaba de ser recibido en el taller.
+          links:
+            notificacionesCliente:
+              href: /api/v1/notificacion?clienteId=23
+              rel: notificacionesClientes
+        - notificacionId: 47
+          clienteId: 23
+          vehiculo: 1HGBH41JXMN109186
+          tipo: Llegada
+          descripcion: Tu vehículo acaba de ser recibido en el taller.
+          links:
+            notificacionesCliente:
+              href: /api/v1/notificacion?clienteId=23
+              rel: notificacionesClientes
+  responses:
+    Response_404:
+      description: "`NOT FOUND`: recurso no disponible"
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/HTTP_Problem'
+          examples:
+            response-http-404:
+              $ref: '#/components/examples/response-http-404'
+    Response_412:
+      description: "`PRECONDITION FAILED`: no se cumple alguna condición previa"
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/HTTP_Problem'
+          examples:
+            response-http-412:
+              $ref: '#/components/examples/response-http-412'
+    Response_422:
+      description: "`UNPROCESSABLE ENTITY`: Falta alguno de los atributos requeridos\
+        \ o son erróneos(clienteId, vehiculo o tipo)..."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/HTTP_Problem'
+          examples:
+            response-http-422:
+              $ref: '#/components/examples/response-http-422'
+    Response_406:
+      description: "`NOT ACCEPTABLE`: El id del cliente o del vehículo que se ha proporcionado\
+        \ no corresponde con ninguno existente"
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/HTTP_Problem'
+          examples:
+            response-http-406:
+              $ref: '#/components/examples/response-http-406'
+  parameters:
+    clienteId:
+      name: clienteId
+      in: query
+      description: ID de un cliente
+      required: false
+      style: form
+      explode: true
+      schema:
+        pattern: ^\d+$
+        type: integer
+    notificacionId:
+      name: notificacionId
+      in: path
+      description: ID de una notificacion
+      required: true
+      style: simple
+      explode: false
+      schema:
+        pattern: ^\d+$
+        type: integer
+    ifMatchParam:
+      name: If_Match
+      in: header
+      description: ETag del recurso que se desea modificar
+      required: true
+      style: simple
+      explode: false
+      schema:
+        pattern: "[0-9a-f]*"
+        type: string
+    orderParam:
+      name: order
+      in: query
+      description: "Elige atributo para ordenar: `id` o `tipo`"
+      required: false
+      allowEmptyValue: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        enum:
+        - id
+        - tipo
+    orderingParam:
+      name: ordering
+      in: query
+      description: '`ASC` o `DESC`'
+      required: false
+      allowEmptyValue: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        enum:
+        - ASC
+        - DESC
+  examples:
+    notificaciones:
+      value:
+      - notificacionId: 47
+        clienteId: 23
+        vehiculo: 1HGBH41JXMN109186
+        tipo: Llegada
+        descripcion: Tu vehículo acaba de ser recibido en el taller.
+        links:
+          notificacionesClientes:
+            href: /api/v1/notificacion?clienteId=23
+            rel: notificacionesClientes
+      - notificacionId: 48
+        clienteId: 24
+        vehiculo: 1HGBH41JXMN109187
+        tipo: Salida
+        descripcion: Tu vehículo acaba de salir del taller.
+        links:
+          notificacionesClientes:
+            href: /api/v1/notificacion?clienteId=24
+            rel: notificacionesClientes
+    notificacionesCliente:
+      value:
+      - notificacionId: 47
+        clienteId: 23
+        vehiculo: 1HGBH41JXMN109186
+        tipo: Llegada
+        descripcion: Tu vehículo acaba de ser recibido en el taller.
+        links:
+          notificacionesClientes:
+            href: /api/v1/notificacion?clienteId=23
+            rel: notificacionesClientes
+      - notificacionId: 49
+        clienteId: 23
+        vehiculo: 1HGBH41JXMN109187
+        tipo: Salida
+        descripcion: Tu vehículo acaba de salir del taller.
+        links:
+          notificacionesClientes:
+            href: /api/v1/notificacion?clienteId=23
+            rel: notificacionesClientes
+    response-http-404:
+      value:
+        type: https://httpstatuses.com/404
+        title: NOT FOUND
+        status: 404
+        detail: El recurso solicitado no está disponible...
+        instance: about:blank
+    response-http-412:
+      value:
+        type: https://httpstatuses.com/412
+        title: PRECONDITION FAILED
+        status: 412
+        detail: No se cumple alguna condición previa...
+        instance: about:blank
+    response-http-422:
+      value:
+        type: https://httpstatuses.com/422
+        title: UNPROCESSABLE ENTITY
+        status: 422
+        detail: "Falta alguno de los atributos requeridos o son erróneos(clienteId,\
+          \ vehiculo o tipo)..."
+        instance: about:blank
+    response-http-406:
+      value:
+        type: https://httpstatuses.com/406
+        title: NOT ACCEPTABLE
+        status: 406
+        detail: El id del cliente o del vehículo que se ha proporcionado no corresponde
+          con ninguno existente
+        instance: about:blank
+  requestBodies:
+    notificacionRB:
+      description: Datos de `Notificacion`
+      content:
+        application/json:
+          schema:
+            required:
+            - clienteId
+            - tipo
+            - vehiculo
+            type: object
+            properties:
+              notificacionId:
+                type: integer
+                description: Id de la notificacion
+                format: int32
+              clienteId:
+                type: integer
+                description: Id del cliente
+                format: int32
+              vehiculo:
+                type: string
+                description: VIN del vehículo
+              tipo:
+                type: string
+                description: Conjunto de todos los tipos de notificaciones posibles.
+                nullable: false
+                enum:
+                - Llegada
+                - Comienzo de Evaluación
+                - Comienzo de Reparación
+                - Imprevisto detectado
+                - Reparación finalizada
+                - Envío de factura
+                - Otro
+                - Salida
+              descripcion:
+                type: string
+                description: Descripción de la notificación
+            example:
+              notificacionId: 47
+              clienteId: 23
+              vehiculo: 1HGBH41JXMN109186
+              tipo: Llegada
+              descripcion: Tu vehículo acaba de ser recibido en el taller.
+              links:
+                notificacionesClientes:
+                  href: /api/v1/notificacion?clienteId=23
+                  rel: notificacionesClientes
+      required: true
+    notificacionPutRB:
+      description: Datos de `Notificacion`
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              notificacionId:
+                type: integer
+                description: Id de la notificacion
+                format: int32
+              clienteId:
+                type: integer
+                description: Id del cliente
+                format: int32
+              vehiculo:
+                type: string
+                description: VIN del vehículo
+              tipo:
+                type: string
+                description: Conjunto de todos los tipos de notificaciones posibles.
+                nullable: false
+                enum:
+                - Llegada
+                - Comienzo de Evaluación
+                - Comienzo de Reparación
+                - Imprevisto detectado
+                - Reparación finalizada
+                - Envío de factura
+                - Otro
+                - Salida
+              descripcion:
+                type: string
+                description: Descripción de la notificación
+            example:
+              notificacionId: 47
+              clienteId: 23
+              vehiculo: 1HGBH41JXMN109186
+              tipo: Llegada
+              descripcion: Tu vehículo acaba de ser recibido en el taller.
+              links:
+                notificacionesClientes:
+                  href: /api/v1/notificacion?clienteId=23
+                  rel: notificacionesClientes
+      required: true
+  headers:
+    ETag:
+      description: Entity Tag (identificador único proporcionado para validación de
+        caché)
+      style: simple
+      explode: false
+      schema:
+        pattern: "[0-9a-f]*"
+        type: string
+        example: 33a64df551425fcc
+        x-faker: random.uuid
+    Location:
+      description: '`URL` del nuevo recurso'
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: url
+        example: /api/v1/notificacion/47
+        x-faker: internet.url
+    Allow:
+      description: Lista de métodos HTTP soportados
+      style: simple
+      explode: false
+      schema:
+        type: string
+      example: "GET,DELETE,PUT,OPTIONS"
+
